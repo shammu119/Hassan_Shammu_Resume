@@ -47,7 +47,7 @@
             Python, R, and Excel. Skilled at transforming ERP, CRM, and finance data into
             clear insights for leadership.
           </p>
-          <button class="pdf-btn" onclick="window.print()">
+          <button class="pdf-btn" onclick="savePDF(this)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Save as PDF
           </button>
@@ -170,5 +170,61 @@
         </div>
       </section>
     </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      var PDF_BTN_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+
+      function savePDF(btn) {
+        btn.innerHTML = '&#8987; Generating&hellip;';
+        btn.disabled = true;
+
+        var opt = {
+          margin: [10, 10, 10, 10],
+          filename: 'Hassan_Shammu_Resume.pdf',
+          image: { type: 'jpeg', quality: 0.97 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#02090f',
+            logging: false,
+            onclone: function (doc) {
+              // Aurora blobs are position:fixed — change to absolute so they
+              // span the full document height across all PDF pages
+              var aurora = doc.querySelector('.bg-aurora');
+              if (aurora) {
+                aurora.style.position = 'absolute';
+                aurora.style.height = doc.body.scrollHeight + 'px';
+              }
+
+              // Freeze all animations at their current frame
+              var freeze = doc.createElement('style');
+              freeze.textContent = '* { animation-play-state: paused !important; animation-duration: 0.001ms !important; transition: none !important; }';
+              doc.head.appendChild(freeze);
+
+              // html2canvas doesn't support backdrop-filter — replace with
+              // a solid semi-transparent background so cards are readable
+              doc.querySelectorAll('.hero-card, .card').forEach(function (c) {
+                c.style.backgroundColor = 'rgba(4, 14, 24, 0.92)';
+              });
+
+              // Hide the button itself from the PDF output
+              doc.querySelectorAll('.pdf-btn').forEach(function (b) {
+                b.style.display = 'none';
+              });
+            }
+          },
+          jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait'
+          }
+        };
+
+        html2pdf().set(opt).from(document.body).save().then(function () {
+          btn.innerHTML = PDF_BTN_ICON + ' Save as PDF';
+          btn.disabled = false;
+        });
+      }
+    </script>
   </body>
 </html>
