@@ -99,9 +99,7 @@ body::after {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: none;
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 32px;
+  display: block;
   padding: 56px 0 48px;
 }
 
@@ -182,8 +180,6 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
 
 .tagline { color: rgba(255,255,255,0.6); font-size: 1.05rem; font-weight: 400; margin: 0 0 22px; }
 
-.hero-note { display: flex; align-items: center; }
-.hero-note p { color: var(--muted); line-height: 1.8; font-size: 0.95rem; margin: 0; }
 .card p, .card li { color: var(--muted); line-height: 1.7; font-size: 0.94rem; }
 
 /* ── Contact links — monochrome minimal ── */
@@ -220,8 +216,11 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
 /* ── Chips — Apple tag style, monochrome ── */
 .chip-list {
   display: flex; flex-wrap: wrap; gap: 9px;
+  align-items: flex-start;
   list-style: none; padding: 0; margin: 0;
 }
+
+.chip-list li + li { margin-top: 0; }
 
 .chip-list li {
   background: rgba(255, 255, 255, 0.06);
@@ -257,6 +256,7 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
 
 .company      { color: var(--accent); font-size: 0.88rem; font-weight: 500; margin: 2px 0 0; }
 .date         { white-space: nowrap; color: var(--subtle); font-size: 0.84rem; }
+.duration     { color: rgba(255, 255, 255, 0.2); font-size: 0.82rem; }
 .subtle-label { color: var(--text); font-size: 0.95rem; font-weight: 500; margin: 0 0 4px; }
 
 ul { margin: 0; padding-left: 18px; }
@@ -336,7 +336,8 @@ li + li { margin-top: 8px; }
   h3, .eyebrow { color: #222 !important; }
   .tagline { color: #444 !important; }
   .company { color: #333 !important; }
-  .card p, .card li, .hero-note p, .date, .subtle-label { color: #444 !important; }
+  .card p, .card li, .date, .subtle-label { color: #444 !important; }
+  .duration { color: #888 !important; }
   .contact-link { color: #111 !important; -webkit-text-fill-color: #111 !important; border: 1px solid #ccc !important; background: none !important; }
   .chip-list li { background: #f5f5f5 !important; border: 1px solid #ccc !important; color: #333 !important; }
   .skills-grid div { background: #f9f9f9 !important; border: 1px solid #ddd !important; }
