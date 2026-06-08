@@ -205,41 +205,10 @@ h3 { font-size: 1rem; margin: 0 0 6px; color: #f0f6ff; text-wrap: balance; }
 
 .tagline { color: #bfdbfe; font-size: 1.05rem; margin: 0 0 18px; font-weight: 500; }
 
-.hero-note {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
+.hero-note { display: flex; align-items: center; }
 
-.hero-note p { color: var(--muted); line-height: 1.75; font-size: 0.97rem; margin: 0 0 20px; }
+.hero-note p { color: var(--muted); line-height: 1.75; font-size: 0.97rem; margin: 0; }
 .card p, .card li { color: var(--muted); line-height: 1.65; }
-
-/* ── PDF button ── */
-.pdf-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 20px;
-  border-radius: 999px;
-  font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  color: #fff;
-  background: linear-gradient(135deg, var(--c1), var(--c3));
-  border: none;
-  box-shadow: 0 4px 18px rgba(59, 130, 246, 0.35);
-  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
-  align-self: flex-start;
-}
-
-.pdf-btn:hover {
-  opacity: 0.88;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(59, 130, 246, 0.5);
-}
-
-.pdf-btn:active { transform: translateY(0); }
 
 /* ── Contact links ── */
 .contact-links { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -382,7 +351,6 @@ li + li { margin-top: 7px; }
   ul { padding-left: 16px; }
   li + li { margin-top: 6px; }
 
-  .pdf-btn { width: 100%; justify-content: center; }
 }
 
 /* ── Print ── */
@@ -392,7 +360,6 @@ li + li { margin-top: 7px; }
   html, body { background: #fff !important; color: #111 !important; }
   body::after { display: none !important; }
   .bg-aurora  { display: none !important; }
-  .pdf-btn    { display: none !important; }
 
   .page-shell {
     width: 100%; padding: 0; max-width: none;
