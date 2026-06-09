@@ -185,6 +185,16 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
 /* ── Contact links — monochrome minimal ── */
 .contact-links { display: flex; flex-wrap: wrap; gap: 8px; }
 
+.linkedin-badge-wrap {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.linkedin-badge-wrap .LI-profile-badge {
+  display: inline-block;
+}
+
 .contact-link {
   display: inline-flex;
   align-items: center;
