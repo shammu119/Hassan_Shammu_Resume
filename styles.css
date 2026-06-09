@@ -185,10 +185,21 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
 /* ── Contact links — monochrome minimal ── */
 .contact-links { display: flex; flex-wrap: wrap; gap: 8px; }
 
-.linkedin-badge-wrap {
-  margin-top: 18px;
+.hero-layout {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.hero-copy { flex: 1; }
+
+.linkedin-badge-wrap {
+  margin-top: 6px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .linkedin-badge-wrap .LI-profile-badge {
