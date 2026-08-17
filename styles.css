@@ -92,10 +92,7 @@ body::after {
 
 /* ── Minimal glass cards ── */
 .card {
-  --spot-a: 0;
-  background:
-    radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(96, 165, 250, var(--spot-a)), transparent 70%),
-    var(--glass);
+  background: var(--glass);
   border: 1px solid var(--border);
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
@@ -105,7 +102,6 @@ body::after {
 }
 
 .card:hover {
-  --spot-a: 0.14;
   border-color: rgba(var(--on-surface), 0.14);
   transform: translateY(-2px);
   box-shadow:

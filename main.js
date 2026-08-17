@@ -34,16 +34,6 @@
     revealEls.forEach(function (el) { observer.observe(el); });
   }
 
-  if (!reduceMotion) {
-    document.querySelectorAll('.card').forEach(function (card) {
-      card.addEventListener('mousemove', function (e) {
-        var rect = card.getBoundingClientRect();
-        card.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
-        card.style.setProperty('--my', (e.clientY - rect.top) + 'px');
-      });
-    });
-  }
-
   var printBtn = document.getElementById('download-pdf');
   if (printBtn) printBtn.addEventListener('click', function () { window.print(); });
 })();
