@@ -2,13 +2,30 @@
   color-scheme: dark;
   --bg: #000000;
   --text: #f5f5f7;
-  --muted: rgba(255, 255, 255, 0.55);
-  --subtle: rgba(255, 255, 255, 0.3);
+  --on-surface: 255, 255, 255;
+  --muted: rgba(var(--on-surface), 0.55);
+  --subtle: rgba(var(--on-surface), 0.3);
   --accent: #60a5fa;
-  --border: rgba(255, 255, 255, 0.08);
-  --glass: rgba(255, 255, 255, 0.04);
+  --border: rgba(var(--on-surface), 0.08);
+  --glass: rgba(var(--on-surface), 0.04);
   --gap: 20px;
   --card-pad: 32px;
+}
+
+/* ── Light mode — same structure, inverted ink ── */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f5f5f5;
+    --text: #15171c;
+    --on-surface: 17, 24, 39;
+    /* Higher alpha than the dark-mode values: white-on-black and
+       dark-on-light don't reach equal contrast at equal alpha, so these
+       are re-tuned to clear WCAG AA (4.5:1) for real body text. */
+    --muted: rgba(var(--on-surface), 0.75);
+    --subtle: rgba(var(--on-surface), 0.62);
+    --accent: #1d4ed8;
+  }
 }
 
 * { box-sizing: border-box; }
@@ -75,20 +92,24 @@ body::after {
 
 /* ── Minimal glass cards ── */
 .card {
-  background: var(--glass);
+  --spot-a: 0;
+  background:
+    radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(96, 165, 250, var(--spot-a)), transparent 70%),
+    var(--glass);
   border: 1px solid var(--border);
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(var(--on-surface), 0.05),
     0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .card:hover {
-  border-color: rgba(255, 255, 255, 0.14);
+  --spot-a: 0.14;
+  border-color: rgba(var(--on-surface), 0.14);
   transform: translateY(-2px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(var(--on-surface), 0.08),
     0 32px 80px rgba(0, 0, 0, 0.6);
 }
 
@@ -103,17 +124,27 @@ body::after {
   padding: 56px 0 48px;
 }
 
-/* ── Load animations ── */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ── Scroll reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.hero-card                   { animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.page-shell > *:nth-child(2) { animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.10s both; }
-.page-shell > *:nth-child(3) { animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.20s both; }
-.page-shell > *:nth-child(4) { animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.30s both; }
-.page-shell > *:nth-child(5) { animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.40s both; }
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Motion preference ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
 
 /* ── Typography ── */
 .eyebrow {
@@ -154,13 +185,26 @@ h1 {
   animation: shimmer 10s ease-in-out infinite;
 }
 
+@media (prefers-color-scheme: light) {
+  h1 {
+    background-image: linear-gradient(
+      120deg,
+      #0f172a  0%,
+      #1e3a8a 22%,
+      #0f172a  44%,
+      #1e293b 66%,
+      #0f172a 100%
+    );
+  }
+}
+
 h2 {
   font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   margin-top: 0;
   margin-bottom: 18px;
-  color: #fff;
+  color: rgba(var(--on-surface), 1);
   text-wrap: balance;
   position: relative;
   padding-bottom: 12px;
@@ -178,33 +222,12 @@ h2::after {
 
 h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); text-wrap: balance; }
 
-.tagline { color: rgba(255,255,255,0.6); font-size: 1.05rem; font-weight: 400; margin: 0 0 22px; }
+.tagline { color: var(--muted); font-size: 1.05rem; font-weight: 400; margin: 0 0 22px; }
 
 .card p, .card li { color: var(--muted); line-height: 1.7; font-size: 0.94rem; }
 
 /* ── Contact links — monochrome minimal ── */
 .contact-links { display: flex; flex-wrap: wrap; gap: 8px; }
-
-.hero-layout {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
-}
-
-.hero-copy { flex: 1; }
-
-.linkedin-badge-wrap {
-  margin-top: 6px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  flex-shrink: 0;
-}
-
-.linkedin-badge-wrap .LI-profile-badge {
-  display: inline-block;
-}
 
 .contact-link {
   display: inline-flex;
@@ -216,17 +239,31 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
   padding: 6px 13px;
   min-height: 34px;
   border-radius: 999px;
-  color: rgba(255, 255, 255, 0.62);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(var(--on-surface), 0.62);
+  background: rgba(var(--on-surface), 0.05);
+  border: 1px solid rgba(var(--on-surface), 0.09);
   transition: background 0.2s, border-color 0.2s, color 0.2s;
   white-space: nowrap;
 }
 
 .contact-link:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(var(--on-surface), 0.09);
+  border-color: rgba(var(--on-surface), 0.16);
+  color: rgba(var(--on-surface), 0.9);
+}
+
+.contact-link--cta {
+  color: var(--accent);
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.4);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.contact-link--cta:hover {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.6);
+  color: var(--accent);
 }
 
 /* ── Layout ── */
@@ -244,27 +281,27 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
 .chip-list li + li { margin-top: 0; }
 
 .chip-list li {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--on-surface), 0.06);
+  border: 1px solid rgba(var(--on-surface), 0.1);
   border-radius: 999px;
   padding: 6px 14px;
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(var(--on-surface), 0.76);
   font-size: 0.85rem;
   font-weight: 400;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .chip-list li:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: #fff;
+  background: rgba(var(--on-surface), 0.1);
+  border-color: rgba(var(--on-surface), 0.18);
+  color: rgba(var(--on-surface), 1);
 }
 
 /* ── Experience ── */
 .experience-item + .experience-item {
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(var(--on-surface), 0.07);
 }
 
 .experience-header {
@@ -277,7 +314,12 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
 
 .company      { color: var(--accent); font-size: 0.88rem; font-weight: 500; margin: 2px 0 0; }
 .date         { white-space: nowrap; color: var(--subtle); font-size: 0.84rem; }
-.duration     { color: rgba(255, 255, 255, 0.2); font-size: 0.82rem; }
+.duration     { color: rgba(var(--on-surface), 0.2); font-size: 0.82rem; }
+
+@media (prefers-color-scheme: light) {
+  /* At the dark-mode alpha this would be almost invisible on a light page. */
+  .duration { color: rgba(var(--on-surface), 0.4); }
+}
 .subtle-label { color: var(--text); font-size: 0.95rem; font-weight: 500; margin: 0 0 4px; }
 
 ul { margin: 0; padding-left: 18px; }
@@ -287,16 +329,16 @@ li + li { margin-top: 8px; }
 .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
 .skills-grid div {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(var(--on-surface), 0.03);
+  border: 1px solid rgba(var(--on-surface), 0.07);
   border-radius: 20px;
   padding: 18px;
   transition: background 0.2s, border-color 0.2s;
 }
 
 .skills-grid div:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(var(--on-surface), 0.06);
+  border-color: rgba(var(--on-surface), 0.13);
 }
 
 /* ── Tablet (920px) ── */
@@ -333,6 +375,10 @@ li + li { margin-top: 8px; }
   body::before, body::after { display: none !important; }
 
   .page-shell { width: 100%; padding: 0; max-width: none; gap: 14px; }
+
+  .reveal { opacity: 1 !important; transform: none !important; }
+
+  #download-pdf { display: none !important; }
 
   .hero-card {
     background: transparent !important;
