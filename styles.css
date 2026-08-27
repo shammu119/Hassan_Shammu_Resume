@@ -1,6 +1,9 @@
 :root {
   color-scheme: dark;
-  --bg: #000000;
+  /* A flat hex reads as a void once cards start floating on it — Apple's
+     dark marketing pages are almost never a single value, just a very
+     soft charcoal-to-black vignette pulling the eye toward the hero. */
+  --bg: radial-gradient(ellipse 1400px 900px at 50% -12%, #0d0d16 0%, #000000 62%);
   --text: #f5f5f7;
   --on-surface: 255, 255, 255;
   --muted: rgba(var(--on-surface), 0.55);
@@ -10,13 +13,28 @@
   --glass: rgba(var(--on-surface), 0.04);
   --gap: 20px;
   --card-pad: 32px;
+
+  /* ── Liquid Glass material tokens ──
+     A glass panel is built from three things: a translucent tint (the
+     "body" of the glass), a bright rim highlight along the top edge
+     (light catching the top of the bevel) and a soft dark edge at the
+     bottom (the underside falling into shadow). Two tint stops read as
+     a slight curvature, like real glass isn't uniformly lit. */
+  --glass-tint-a: rgba(var(--on-surface), 0.16);
+  --glass-tint-b: rgba(var(--on-surface), 0.05);
+  --glass-rim-top: rgba(var(--on-surface), 0.55);
+  --glass-rim-bottom: rgba(var(--on-surface), 0.06);
+  --glass-blur: 28px;
+  --glass-radius: 30px;
+  --glass-radius-sm: 18px;
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ── Light mode — same structure, inverted ink ── */
 @media (prefers-color-scheme: light) {
   :root {
     color-scheme: light;
-    --bg: #f5f5f5;
+    --bg: radial-gradient(ellipse 1400px 900px at 50% -12%, #ffffff 0%, #f2f2f4 62%);
     --text: #15171c;
     --on-surface: 17, 24, 39;
     /* Higher alpha than the dark-mode values: white-on-black and
@@ -25,6 +43,14 @@
     --muted: rgba(var(--on-surface), 0.75);
     --subtle: rgba(var(--on-surface), 0.62);
     --accent: #1d4ed8;
+
+    /* Light-mode glass needs to stay opaque enough that dark text keeps
+       AA contrast — real glass over a bright scene reflects more white,
+       so lean on white tints regardless of ink color. */
+    --glass-tint-a: rgba(255, 255, 255, 0.7);
+    --glass-tint-b: rgba(255, 255, 255, 0.4);
+    --glass-rim-top: rgba(255, 255, 255, 0.9);
+    --glass-rim-bottom: rgba(var(--on-surface), 0.08);
   }
 }
 
@@ -39,23 +65,31 @@ html, body {
 
 body { min-height: 100vh; position: relative; overflow-x: hidden; }
 
-/* ── Single centered breathing glow — Apple spotlight ── */
+/* ── Floating colour field — what the glass actually refracts ──
+   Liquid Glass only reads as "glass" when there's something soft and
+   colourful behind it to bend. One spotlight isn't enough content, so
+   this is three independently-drifting blobs layered in one element
+   (no extra DOM needed) — violet, orange, and teal, the same triad used
+   for the heading gradients below, so the glow and the ink read as one
+   palette — slow and large so they never distract, just tint the
+   frosted panels above. */
 body::before {
   content: '';
   position: fixed;
-  width: 1100px; height: 800px;
-  left: 50%; top: -380px;
-  transform: translateX(-50%);
-  background: radial-gradient(ellipse, rgba(96, 165, 250, 0.11) 0%, transparent 65%);
-  border-radius: 50%;
-  animation: breathe 7s ease-in-out infinite alternate;
+  inset: -10% -10% -10% -10%;
+  background:
+    radial-gradient(ellipse 620px 520px at 18% 12%, rgba(167, 139, 250, 0.18), transparent 62%),
+    radial-gradient(ellipse 560px 480px at 85% 22%, rgba(251, 146, 60, 0.14), transparent 60%),
+    radial-gradient(ellipse 700px 560px at 50% 92%, rgba(45, 212, 191, 0.12), transparent 65%);
+  animation: drift 22s ease-in-out infinite alternate;
   z-index: 0;
   pointer-events: none;
 }
 
-@keyframes breathe {
-  from { opacity: 0.55; transform: translateX(-50%) scale(1); }
-  to   { opacity: 1;    transform: translateX(-50%) scale(1.08); }
+@keyframes drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-1.5%, 2%, 0) scale(1.06); }
+  100% { transform: translate3d(1.5%, -1%, 0) scale(1); }
 }
 
 /* ── Grain texture ── */
@@ -84,30 +118,53 @@ body::after {
 
 /* ── Shared shape ── */
 .hero-card, .card {
-  border-radius: 28px;
+  border-radius: var(--glass-radius);
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.5s var(--spring), box-shadow 0.5s var(--spring);
 }
 
-/* ── Minimal glass cards ── */
+/* ── Liquid Glass cards ──
+   Layer order: a two-stop tint (the glass body) → an inset rim highlight
+   top and rim shadow bottom (the bevel catching light) → an ambient drop
+   shadow that seats the panel above the page. The border itself stays
+   transparent — the "edge" is drawn entirely with inset box-shadows,
+   which is what lets the highlight fade smoothly instead of reading as
+   a hard outline. */
 .card {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  background: linear-gradient(155deg, var(--glass-tint-a), var(--glass-tint-b));
+  border: 1px solid transparent;
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
   box-shadow:
-    inset 0 1px 0 rgba(var(--on-surface), 0.05),
+    inset 0 1px 1px var(--glass-rim-top),
+    inset 0 -1px 12px var(--glass-rim-bottom),
     0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
+/* Static glossy sheen: a soft diagonal band near the top, like light
+   grazing the front face of the glass. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(var(--on-surface), 0.14) 0%, transparent 30%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
 .card:hover {
-  border-color: rgba(var(--on-surface), 0.14);
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.008);
   box-shadow:
-    inset 0 1px 0 rgba(var(--on-surface), 0.08),
+    inset 0 1px 1px var(--glass-rim-top),
+    inset 0 -1px 14px var(--glass-rim-bottom),
     0 32px 80px rgba(0, 0, 0, 0.6);
 }
+
+/* The sheen layer is position:absolute, which paints it above normal
+   in-flow content regardless of source order — without this, the
+   "glass" would sit on top of the text instead of behind it. */
+.card > * { position: relative; z-index: 1; }
 
 /* ── Hero — borderless, floating on black ── */
 .hero-card {
@@ -152,7 +209,9 @@ body::after {
   margin: 0 0 16px;
 }
 
-/* Pearl shimmer: warm champagne ↔ ice blue — nearly white, barely-there */
+/* Shimmer: violet → orange → teal, the same triad as the background
+   blobs — nearly-white pastel tints so it still reads as "white text
+   with a hint of colour" rather than a loud rainbow at this size. */
 @keyframes shimmer {
   0%   { background-position: 0%   50%; }
   50%  { background-position: 100% 50%; }
@@ -169,10 +228,11 @@ h1 {
   background: linear-gradient(
     120deg,
     #ffffff  0%,
-    #fef3c7 22%,
-    #ffffff  44%,
-    #e0f2fe  66%,
-    #ffffff 100%
+    #ddd6fe 20%,
+    #ffffff  40%,
+    #fed7aa 60%,
+    #ffffff  80%,
+    #99f6e4 100%
   );
   background-size: 300% 100%;
   -webkit-background-clip: text;
@@ -186,10 +246,11 @@ h1 {
     background-image: linear-gradient(
       120deg,
       #0f172a  0%,
-      #1e3a8a 22%,
-      #0f172a  44%,
-      #1e293b 66%,
-      #0f172a 100%
+      #6d28d9 20%,
+      #0f172a  40%,
+      #c2410c 60%,
+      #0f172a  80%,
+      #0f766e 100%
     );
   }
 }
@@ -206,13 +267,13 @@ h2 {
   padding-bottom: 12px;
 }
 
-/* Thin fading gradient line — blue to transparent */
+/* Thin fading gradient line — violet to orange, echoing the h1 shimmer */
 h2::after {
   content: '';
   position: absolute;
   bottom: 0; left: 0;
   width: 44px; height: 1.5px;
-  background: linear-gradient(90deg, rgba(96,165,250,0.9), rgba(167,139,250,0.45), transparent);
+  background: linear-gradient(90deg, rgba(167,139,250,0.9), rgba(251,146,60,0.5), transparent);
   border-radius: 2px;
 }
 
@@ -236,30 +297,31 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
   min-height: 34px;
   border-radius: 999px;
   color: rgba(var(--on-surface), 0.62);
-  background: rgba(var(--on-surface), 0.05);
-  border: 1px solid rgba(var(--on-surface), 0.09);
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  background: linear-gradient(155deg, var(--glass-tint-a), var(--glass-tint-b));
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid transparent;
+  box-shadow: inset 0 1px 0 var(--glass-rim-top), inset 0 -1px 6px var(--glass-rim-bottom);
+  transition: transform 0.3s var(--spring), box-shadow 0.3s ease, color 0.2s;
   white-space: nowrap;
 }
 
 .contact-link:hover {
-  background: rgba(var(--on-surface), 0.09);
-  border-color: rgba(var(--on-surface), 0.16);
+  transform: translateY(-1px);
   color: rgba(var(--on-surface), 0.9);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top), inset 0 -1px 8px var(--glass-rim-bottom), 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
 .contact-link--cta {
   color: var(--accent);
-  background: rgba(96, 165, 250, 0.12);
-  border-color: rgba(96, 165, 250, 0.4);
+  background: linear-gradient(155deg, rgba(96, 165, 250, 0.32), rgba(96, 165, 250, 0.12));
   cursor: pointer;
   font-family: inherit;
 }
 
 .contact-link--cta:hover {
-  background: rgba(96, 165, 250, 0.2);
-  border-color: rgba(96, 165, 250, 0.6);
   color: var(--accent);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top), inset 0 -1px 8px rgba(96, 165, 250, 0.3), 0 6px 18px rgba(96, 165, 250, 0.25);
 }
 
 /* ── Layout ── */
@@ -277,20 +339,23 @@ h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; color: var(--text); 
 .chip-list li + li { margin-top: 0; }
 
 .chip-list li {
-  background: rgba(var(--on-surface), 0.06);
-  border: 1px solid rgba(var(--on-surface), 0.1);
+  background: linear-gradient(155deg, var(--glass-tint-a), var(--glass-tint-b));
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid transparent;
+  box-shadow: inset 0 1px 0 var(--glass-rim-top), inset 0 -1px 6px var(--glass-rim-bottom);
   border-radius: 999px;
   padding: 6px 14px;
   color: rgba(var(--on-surface), 0.76);
   font-size: 0.85rem;
   font-weight: 400;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  transition: transform 0.3s var(--spring), box-shadow 0.3s ease, color 0.2s;
 }
 
 .chip-list li:hover {
-  background: rgba(var(--on-surface), 0.1);
-  border-color: rgba(var(--on-surface), 0.18);
+  transform: translateY(-1px);
   color: rgba(var(--on-surface), 1);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top), inset 0 -1px 8px var(--glass-rim-bottom), 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* ── Experience ── */
@@ -325,16 +390,19 @@ li + li { margin-top: 8px; }
 .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
 .skills-grid div {
-  background: rgba(var(--on-surface), 0.03);
-  border: 1px solid rgba(var(--on-surface), 0.07);
-  border-radius: 20px;
+  background: linear-gradient(155deg, var(--glass-tint-a), var(--glass-tint-b));
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  border: 1px solid transparent;
+  box-shadow: inset 0 1px 0 var(--glass-rim-top), inset 0 -1px 8px var(--glass-rim-bottom);
+  border-radius: var(--glass-radius-sm);
   padding: 18px;
-  transition: background 0.2s, border-color 0.2s;
+  transition: transform 0.3s var(--spring), box-shadow 0.3s ease;
 }
 
 .skills-grid div:hover {
-  background: rgba(var(--on-surface), 0.06);
-  border-color: rgba(var(--on-surface), 0.13);
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top), inset 0 -1px 10px var(--glass-rim-bottom), 0 14px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* ── Tablet (920px) ── */
@@ -360,8 +428,15 @@ li + li { margin-top: 8px; }
   h3 { font-size: 0.9rem; }
   ul { padding-left: 16px; }
 
-  /* Shrink glow on mobile */
-  body::before { width: 420px; height: 320px; top: -160px; }
+  /* Smaller, cheaper blur radius on mobile — backdrop-filter is expensive
+     on phone GPUs, and the blobs read fine less diffused at this scale. */
+  :root { --glass-blur: 18px; }
+  body::before {
+    background:
+      radial-gradient(ellipse 320px 260px at 20% 10%, rgba(167, 139, 250, 0.18), transparent 62%),
+      radial-gradient(ellipse 300px 240px at 85% 18%, rgba(251, 146, 60, 0.14), transparent 60%),
+      radial-gradient(ellipse 360px 280px at 50% 95%, rgba(45, 212, 191, 0.12), transparent 65%);
+  }
 }
 
 /* ── Print ── */
@@ -391,6 +466,13 @@ li + li { margin-top: 8px; }
     border: 1px solid #ddd !important;
     border-radius: 8px !important;
     break-inside: avoid;
+  }
+
+  .card::before { display: none !important; }
+  .contact-link, .chip-list li, .skills-grid div {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
   }
 
   h1 { background: none !important; -webkit-text-fill-color: #111 !important; color: #111 !important; }
